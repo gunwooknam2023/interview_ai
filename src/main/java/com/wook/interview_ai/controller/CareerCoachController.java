@@ -19,13 +19,12 @@ public class CareerCoachController {
     private final CareerCoachService careerCoachService;
 
     @PostMapping
-    // 2. 반환 타입을 ResponseEntity 로 변경
     public ResponseEntity<ApiResponseDto<CoachResponseDto>> getCoaching(
             @Valid @RequestBody ResumeRequestDto requestDto
     ) {
         CoachResponseDto responseData = careerCoachService.generateCoaching(requestDto);
 
-        // 3. ResponseEntity.ok() 를 사용해 '200 OK' 상태 코드와 함께 응답 본문을 반환
+        // ResponseEntity.ok() 를 사용해 '200 OK' 상태 코드와 함께 응답 본문을 반환
         return ResponseEntity.ok(ApiResponseDto.success(responseData));
     }
 }
