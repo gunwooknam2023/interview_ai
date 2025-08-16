@@ -9,8 +9,9 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CoachResponseDto {
+public class LearningPathSectionDto {
 
-    private List<String> interviewQuestions;
-    private List<LearningPathSectionDto> learningPath;
+    private String sectionTitle;
+    private List<String> topics;
+    private String learningGoal;
 }
