@@ -53,7 +53,6 @@ public class CareerCoachService {
             String jsonResponse = extractJson(rawResponse);
 
             log.info("추출된 순수 JSON 응답:\n{}", jsonResponse);
-            // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
             // 4. AI가 생성한 JSON 응답을 DTO 객체로 파싱
             return objectMapper.readValue(jsonResponse, CoachResponseDto.class);
