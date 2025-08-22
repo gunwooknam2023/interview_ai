@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+/**
+ * AI 커리어 코칭의 핵심 비즈니스 로직을 처리하는 서비스입니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,25 +39,22 @@ public class CareerCoachService {
         String finalPrompt = String.format(promptTemplate, resumeText);
         log.info("Gemini AI에게 전송할 최종 프롬프트:\n{}", finalPrompt);
 
-        // 3. AI 모델에 요청 전송
         try {
-            // genaiClient.models.generateContent()를 사용하여 AI 호출
+            /// 3. AI 모델에 요청 전송 및 응답 수신
             GenerateContentResponse response = genaiClient.models.generateContent(
                     "gemini-2.5-flash", // 요청하신 모델 이름으로 변경
                     finalPrompt,
                     null
             );
-
-            // response.text() 메소드로 원본 응답 추출
             String rawResponse = response.text();
             log.info("Gemini AI로부터 받은 원본 응답:\n{}", rawResponse);
 
-            // AI 응답에서 마크다운 코드 블록(```json ... ```)을 제거하고 순수 JSON만 추출
+            // 4. AI 응답에서 순수 JSON만 추출
             String jsonResponse = extractJson(rawResponse);
 
             log.info("추출된 순수 JSON 응답:\n{}", jsonResponse);
 
-            // 4. AI가 생성한 JSON 응답을 DTO 객체로 파싱
+            // 5. JSON 응답을 DTO 객체로 변환하여 반환
             return objectMapper.readValue(jsonResponse, CoachResponseDto.class);
 
         } catch (IOException e) {
@@ -64,9 +64,10 @@ public class CareerCoachService {
     }
 
     /**
-     * 문자열에서 JSON 객체 부분만 추출합니다.
+     * AI가 생성한 원본 문자열에서 JSON 부분만 추출합니다.
+     * (e.g., Markdown 코드 블록 제거)
      * @param rawResponse AI가 보낸 원본 문자열
-     * @return 순수 JSON 문자열
+     * @return 순수 JSON 형식의 문자열
      */
     private String extractJson(String rawResponse) {
         // 첫 '{' 문자의 위치를 찾습니다.

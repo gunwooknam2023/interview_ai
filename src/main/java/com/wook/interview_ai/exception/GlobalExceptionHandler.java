@@ -10,15 +10,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 애플리케이션 전역에서 발생하는 예외를 중앙에서 처리하는 클래스입니다.
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * @Valid 유효성 검사 실패 시 발생하는 예외를 처리합니다.
-     *
+     * @Valid 어노테이션을 사용한 유효성 검증 실패 시 발생하는 예외를 처리합니다.
      * @param e MethodArgumentNotValidException
-     * @return 400 Bad Request 응답
+     * @return 400 Bad Request 상태 코드와 에러 메시지를 담은 응답
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -26,8 +28,8 @@ public class GlobalExceptionHandler {
         BindingResult bindingResult = e.getBindingResult();
         StringBuilder builder = new StringBuilder();
 
-        // 여러 유효성 검사 오류가 있을 경우, 첫 번째 오류에 대한 메시지를 생성합니다.
         if (bindingResult.hasErrors()) {
+            // 여러 에러 중 첫 번째 필드 에러의 메시지를 사용합니다.
             FieldError fieldError = bindingResult.getFieldErrors().get(0);
             builder.append("[");
             builder.append(fieldError.getField());
@@ -42,16 +44,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 처리되지 않은 나머지 예외들을 처리합니다. (서버 내부 오류)
-     *
+     * 처리되지 않은 모든 런타임 예외(서버 내부 오류)를 처리합니다.
      * @param e RuntimeException
-     * @return 500 Internal Server Error 응답
+     * @return 500 Internal Server Error 상태 코드와 에러 메시지를 담은 응답
      */
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponseDto<?> handleRuntimeException(RuntimeException e) {
-        log.error("서버 내부 오류 발생: ", e); // 예외의 전체 스택 트레이스를 에러 수준으로 로깅
-
+        log.error("서버 내부 오류 발생: ", e);
         return ApiResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부에 오류가 발생했습니다. 관리자에게 문의해주세요.");
     }
 }
