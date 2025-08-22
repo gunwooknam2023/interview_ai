@@ -16,11 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     /**
-     * @Valid 어노테이션을 사용한 유효성 검증 실패 시 발생하는 예외를 처리합니다.
-     * @param e MethodArgumentNotValidException
-     * @return 400 Bad Request 상태 코드와 에러 메시지를 담은 응답
+     * @Valid 유효성 검증 실패 시 발생하는 예외를 처리합니다.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -29,7 +26,6 @@ public class GlobalExceptionHandler {
         StringBuilder builder = new StringBuilder();
 
         if (bindingResult.hasErrors()) {
-            // 여러 에러 중 첫 번째 필드 에러의 메시지를 사용합니다.
             FieldError fieldError = bindingResult.getFieldErrors().get(0);
             builder.append("[");
             builder.append(fieldError.getField());
@@ -37,21 +33,29 @@ public class GlobalExceptionHandler {
             builder.append(fieldError.getDefaultMessage());
         }
 
-        String errorMessage = builder.toString();
-        log.warn("유효성 검사 실패: {}", errorMessage); // 예외 내용을 경고 수준으로 로깅
+        log.warn("유효성 검사 실패: {}", builder.toString());
+        return ApiResponseDto.error(HttpStatus.BAD_REQUEST.value(), builder.toString());
+    }
 
-        return ApiResponseDto.error(HttpStatus.BAD_REQUEST.value(), errorMessage);
+    /**
+     * LLM 연동 과정에서 발생하는 특정 예외를 처리합니다.
+     * @param e LLMProcessingException
+     * @return 502 Bad Gateway 상태 코드와 에러 메시지를 담은 응답
+     */
+    @ExceptionHandler(LLMProcessingException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ApiResponseDto<?> handleLlmProcessingException(LLMProcessingException e) {
+        log.error("LLM 처리 중 오류 발생: {}", e.getMessage(), e);
+        return ApiResponseDto.error(HttpStatus.BAD_GATEWAY.value(), "AI 서버 연동 중 오류가 발생했습니다.");
     }
 
     /**
      * 처리되지 않은 모든 런타임 예외(서버 내부 오류)를 처리합니다.
-     * @param e RuntimeException
-     * @return 500 Internal Server Error 상태 코드와 에러 메시지를 담은 응답
      */
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponseDto<?> handleRuntimeException(RuntimeException e) {
         log.error("서버 내부 오류 발생: ", e);
-        return ApiResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부에 오류가 발생했습니다. 관리자에게 문의해주세요.");
+        return ApiResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부에 오류가 발생했습니다.");
     }
 }
