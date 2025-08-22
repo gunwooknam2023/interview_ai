@@ -22,4 +22,7 @@ public class LearningPathSectionDto {
 
     /** 해당 섹션의 학습 목표 */
     private String learningGoal;
+
+    /** 추천 학습 자료 (블로그, 공식 문서, 강의 등) */
+    private List<String> recommendedResources;
 }
