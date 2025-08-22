@@ -22,14 +22,14 @@ import java.io.IOException;
 public class CareerCoachService {
 
     private final PromptService promptService;
-    private final GeminiService geminiService;
+    private final LLMService llmService;
 
     public CoachResponseDto generateCoaching(ResumeRequestDto requestDto) {
         // 1. PromptService를 통해 AI에게 보낼 프롬프트를 생성합니다.
         String finalPrompt = promptService.createCoachingPrompt(requestDto);
         log.info("Gemini AI에게 전송할 최종 프롬프트:\n{}", finalPrompt);
 
-        // 2. GeminiService를 통해 AI 응답을 받아옵니다.
-        return geminiService.generateCoaching(finalPrompt);
+        // 2. LLMService의 구현체를 통해 AI 응답을 받아옵니다.
+        return llmService.generateContent(finalPrompt);
     }
 }
