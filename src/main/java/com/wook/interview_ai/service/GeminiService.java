@@ -5,44 +5,40 @@ import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 import com.wook.interview_ai.dto.CoachResponseDto;
 import com.wook.interview_ai.exception.LLMProcessingException;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 /**
- * Gemini AI 모델과의 통신 및 응답 처리를 전담하는 서비스입니다.
+ * Gemini AI 모델을 사용하여 LLMService 인터페이스를 구현한 클래스입니다.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GeminiService {
-
+public class GeminiService implements LLMService {
     private final Client genaiClient;
     private final ObjectMapper objectMapper;
 
     /**
-     * 완성된 프롬프트를 AI 모델에 전달하고, 응답을 DTO로 파싱하여 반환합니다.
-     * @param finalPrompt AI 모델에 전달할 최종 프롬프트
+     * 주어진 프롬프트를 사용하여 Gemini AI 모델로부터 콘텐츠를 생성합니다.
+     * @param prompt AI 모델에 전달할 최종 프롬프트
      * @return AI가 생성한 코칭 결과 DTO
      */
-    public CoachResponseDto generateCoaching(String finalPrompt) {
+    @Override
+    public CoachResponseDto generateContent(String prompt) {
         try {
-            // 1. AI 모델에 요청 전송 및 응답 수신
             GenerateContentResponse response = genaiClient.models.generateContent(
-                    "gemini-2.5-flash-lite", // 사용할 모델 이름
-                    finalPrompt,
+                    "gemini-2.5-flash-lite",
+                    prompt,
                     null
             );
             String rawResponse = response.text();
             log.info("Gemini AI로부터 받은 원본 응답:\n{}", rawResponse);
 
-            // 2. AI 응답에서 순수 JSON만 추출
             String jsonResponse = extractJson(rawResponse);
             log.info("추출된 순수 JSON 응답:\n{}", jsonResponse);
 
-            // 3. JSON 응답을 DTO 객체로 변환하여 반환
             return objectMapper.readValue(jsonResponse, CoachResponseDto.class);
 
         } catch (IOException e) {
